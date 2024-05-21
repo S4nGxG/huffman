@@ -74,24 +74,24 @@ void encode(Node* root, string s, map<char, string> &HuffmanCode) {
 }
 
 //Hàm giải mã chuỗi được mã hóa
-void decode(Node* root, string encodedStr, ofstream& outputFile) {
-    string decodedStr = "";
-    Node* current = root;
+void decode(Node* root, int &i, string s, ofstream& outputFile) {
 
-    for (char bit : encodedStr) {
-        if (bit == '0') {
-            current = current->left;
-        } else {
-            current = current->right;
-        }
-
-        if (!current->left && !current->right) {
-            decodedStr += current->data;
-            current = root;
-        }
+     //Nếu nút mang giá trị null thì return
+    if(root == nullptr)
+        return;
+    
+    //nếu là nút là thì in ra kí tự đó
+    if(root->left == nullptr && root->right == nullptr) {
+        outputFile << root->data;
+        return;
     }
 
-    outputFile << decodedStr;
+    //cộng chỉ số của chuỗi mã hóa đang xét
+    i++;
+
+    if(s[i] == '0') // nếu tại vị trí chuỗi mã hóa đang xét là 0 thì thực hiện đệ quy sang nút con bên trái để xét tiếp
+        decode(root->left, i, s, outputFile);
+    else decode(root->right, i, s, outputFile); // ngược lại xét nhánh con bên phải
 }
 
 //Hàm xây dựng cây Huffman
@@ -163,12 +163,11 @@ void encodeFile(string& input, string& output) {
         s += '\n';
     }
     s.erase(s.size()-1);
-    inputFile.close();
     Node* root = BuildHuffmanTree(s);
     encode(root, "", HuffmanCode);
     
     encodeTree(root, outputFile);
-    outputFile << "!";
+    outputFile << "!" << endl;
 
     string a = "";
     for(auto x : s) {
@@ -176,18 +175,10 @@ void encodeFile(string& input, string& output) {
     }
     int p = a.size()%8;
     int q = 8-p;
-
-    int res = a.size()/8 + 2;
-    string m = to_string(res);
-    while(m.size() < 8) m = '0' + m;
-    outputFile << m;
-
     while(q > 0) {
         a = a + '0';
         q--;
     }
-    
-    
     for(int i = 0; i < a.size(); i += 8) { 
         string temp = a.substr(i, 8);
         outputFile << char(byte_to_dec(temp));
@@ -220,35 +211,25 @@ Node* loadHuffmanTree(ifstream& inputFile) {
 //Hàm giải nén File
 void decodeFile(string input, string output) {
 
-    //ifstream inputFile(input);
-    //ofstream outputFile(output);
-
-    
     ifstream inputFile(input);
     ofstream outputFile(output);
-    //outputFile.open(output, ios::out);
+
     
-    if(!inputFile) cout << "ko mo dc tep input" << endl;
-    if(!outputFile) cout << "ko mo dc tep oupt" << endl;
+    //ifstream inputFile;
+    //ofstream outputFile(output);
+    //outputFile.open(output, ios::out);
     
     Node* root =  loadHuffmanTree(inputFile);
     string s;
+    string t;
 
-    int Size = 0;
-    for(int i = 1; i <= 9; i++) {
-        char c;
-        inputFile.get(c);
-        if(i != 1) {
-            Size = Size*10 + int(c-48);
-        }
-        
+    getline(inputFile, t);
+    while(getline(inputFile, t)) {
+        s += t + '\n';
     }
+    
 
-    for(int i = 1; i <= Size; i++) { 
-        char c;
-        inputFile.get(c);
-        s += c;
-    }
+    s.erase(s.size()-1);
     string res = "";
     for(int i = 0; i < s.size()-1; i++) {
         unsigned char temp = s[i];
@@ -261,10 +242,13 @@ void decodeFile(string input, string output) {
         res.erase(res.size()-1);
         o--;
     }
-    decode(root, res, outputFile);
+    int i = -1;
+    while(i < (int)res.size()-2) {
+        decode(root, i, res, outputFile);
+    }
     
-    inputFile.close();
-    outputFile.close();
+    //inputFile.close();
+    //outputFile.close();
     
 }
 int main() {
