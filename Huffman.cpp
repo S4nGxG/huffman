@@ -28,13 +28,13 @@ int byte_to_dec(string s) {
 
 // định nghĩa 1 nút của cây Huffman
 struct Node {
-    char data; // kí tự
+    unsigned char data; // kí tự
     int freq; // tần suất xuất hiện
     Node *left, *right; // con trỏ cho cái nút bên trái, phải
 };
 
 //Tạo 1 nút mới cho cây
-Node* getNode(char c, int freq, Node* left, Node* right) {
+Node* getNode(unsigned char c, int freq, Node* left, Node* right) {
     Node* node  = new Node();
 
     // Khởi tạo node mới
@@ -56,7 +56,7 @@ struct comp
 };
 
 //Hàm để duyệt cây Huffman để tìm mã code cho từng kí tự đã nén
-void encode(Node* root, string s, map<char, string> &HuffmanCode) {
+void encode(Node* root, string s, map<unsigned char, string> &HuffmanCode) {
 
     //Nếu nút mang giá trị null thì return
     if(root == nullptr)
@@ -98,7 +98,7 @@ void decode(Node* root, int &i, string s, ofstream& outputFile) {
 Node* BuildHuffmanTree(string text) {
     
     priority_queue<Node*, vector<Node*>, comp> p;
-    map<char, int> freqMap;
+    map<unsigned char, int> freqMap;
     
     //Đếm tần suất xuất hiện của mỗi kí tự
     for(auto x : text) {
@@ -140,7 +140,8 @@ void encodeTree(Node* root, ofstream& file) {
         file.put('1');
         // Ghi ký tự của nút lá vào tệp
         file.put(root->data);
-    } else {
+    } 
+    else {
         // Nếu đây là một nút không phải lá, ghi '0' để chỉ định nút không phải lá
         file.put('0');
         // Tiếp tục ghi cấu trúc cây từ cây con bên trái và cây con bên phải
@@ -152,10 +153,11 @@ void encodeTree(Node* root, ofstream& file) {
 //Hàm nén file
 void encodeFile(string& input, string& output) {
 
-    map<char, string> HuffmanCode;
+    map<unsigned char, string> HuffmanCode;
 
     ifstream inputFile(input);
-    ofstream outputFile(output);
+    ofstream outputFile;
+    outputFile.open(output, ios::binary);
     string s;
     string t;
     while(getline(inputFile, t)) {
@@ -211,24 +213,23 @@ Node* loadHuffmanTree(ifstream& inputFile) {
 //Hàm giải nén File
 void decodeFile(string input, string output) {
 
-    ifstream inputFile(input);
+    ifstream inputFile;
     ofstream outputFile(output);
 
     
     //ifstream inputFile;
     //ofstream outputFile(output);
-    //outputFile.open(output, ios::out);
+    inputFile.open(input, ios::binary);
     
     Node* root =  loadHuffmanTree(inputFile);
     string s;
     string t;
 
     getline(inputFile, t);
+    char c;
     while(getline(inputFile, t)) {
         s += t + '\n';
     }
-    
-
     s.erase(s.size()-1);
     string res = "";
     for(int i = 0; i < s.size()-1; i++) {
@@ -290,4 +291,5 @@ int main() {
     }
     return 0;
 }
+
 
